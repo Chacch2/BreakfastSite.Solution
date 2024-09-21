@@ -319,7 +319,7 @@
     $("body").append(`
   <div id="cancelOrderModal" class="modal" style="display:none;">
     <div class="modal-content" style="border:1px solid #ddd; padding:20px; background-color:white; width:300px; margin:auto;">
-      <p style="font-weight:bold;">取消訂單</p>
+      <p style="font-weight:bold; ">取消訂單</p>
       <ol>
         <li>送出訂單後的 <span style="color: red;">15分鐘內</span> 才能取消。</li>
         <li>取消後的訂單將不進行點數的累積以及點數的折抵。</li>

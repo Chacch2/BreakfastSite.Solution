@@ -25,7 +25,7 @@ namespace BackEnd.site.Controllers.Apis
                     OrderID = o.Id,
                     OrderTime = o.OrderTime,
                     PickupTime = o.TakeTime,
-                    TotalAmount = o.Total,
+                    TotalAmount = o.FinalTotal,
                     OrderStatus = o.OrderStatus,
                     PointsUsed = o.PointsUsed,
                     PointsEarned = o.PointsEarned,
