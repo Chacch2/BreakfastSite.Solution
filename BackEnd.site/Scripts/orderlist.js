@@ -193,6 +193,8 @@
                 return "已取餐";
             case 3:
                 return "已取消";
+            case 4:
+                return "棄單";
             default:
                 return "未知狀態";
         }
@@ -328,22 +330,25 @@
   </div>
 `);
 
-    // 当用户点击“明细”按钮时显示订单详细信息
-    $(document).on("click", ".details-btn", function () {
-        var orderId = $(this).data("order-id");
-        showOrderDetails(orderId); // 调用函数显示订单详细信息
-    });
-
     // 點擊 "取消訂單" 按鈕時觸發（僅在顯示訂單明細中）
     $(document).on("click", ".cancel-order-btn", function () {
-        var orderId = $(this).data("order-id");
-        var order = rankList.find((order) => order.orderID === orderId);
+        var orderId = parseInt($(this).data("order-id")); 
+        console.log("取消訂單按鈕被點擊，訂單ID為:", orderId);
+
+        var order = rankList.find((order) => parseInt(order.orderID) === orderId);
+
+        // 檢查 order 是否存在
+      
+
+        console.log("找到的訂單:", order);
 
         // 檢查訂單狀態，如果不是 "未取餐" 則提示不能取消
         if (order.orderStatus !== 1) {
             alert("此訂單無法取消，已經取餐。");
+            console.log("訂單狀態不是未取餐，無法取消:", order.orderStatus);
             return; // 阻止後續取消訂單的邏輯
         }
+
 
         $("#cancelOrderModal").show(); // 顯示取消訂單彈出框
 
@@ -351,22 +356,41 @@
         $("#confirmCancel")
             .off("click")
             .on("click", function () {
-                // 模擬更新訂單狀態
-                order.orderStatus = 3; // 設置為已取消狀態 (3表示已取消)
+                // 发起 API 请求，将取消状态发送给后端
+                fetch(`/api/orders/cancel/${orderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderStatus: 3 // 修改状态为已取消
+                    })
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        console.log(result);
 
-                // 更新訂單明細顯示，移除取消按鈕，顯示“已取消”
-                var statusText = getStatusText(order.orderStatus);
-                $(".order-status-text").text("訂單狀態：" + statusText); // 更新狀態文本
-                $(".cancel-order-btn").replaceWith(
-                    '<p style="color: red; font-weight: bold;">已取消</p>'
-                ); // 替換取消按鈕為“已取消”
+                        // 更新前端显示
+                        order.orderStatus = 3; // 更新前端订单状态
 
-                // 隱藏取消訂單彈出框
-                $("#cancelOrderModal").hide();
+                        // 更新訂單明細顯示，移除取消按鈕，顯示“已取消”
+                        var statusText = getStatusText(order.orderStatus);
+                        $(".order-status-text").text("訂單狀態：" + statusText); // 更新狀態文本
+                        $(".cancel-order-btn").replaceWith(
+                            '<p style="color: red; font-weight: bold;">已取消</p>'
+                        ); // 替換取消按鈕為“已取消”
 
-                // 更新表格顯示
-                updateTable(array);
-                highlightIndexButton(array.length);
+                        // 隱藏取消訂單彈出框
+                        $("#cancelOrderModal").hide();
+
+                        // 更新表格顯示
+                        updateTable(array);
+                        highlightIndexButton(array.length);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert("取消訂單失敗，請稍後再試。");
+                    });
             });
 
         // 點擊 "取消" 按鈕時關閉彈出框
@@ -374,67 +398,4 @@
             $("#cancelOrderModal").hide();
         });
     });
-
-    // 显示订单详细信息的函数
-    function showOrderDetails(orderId) {
-        var order = rankList.find((order) => order.orderID === orderId);
-
-        // 将数字状态码转换为文本状态
-        var statusText = getStatusText(order.orderStatus);
-
-        // 从订单数据中直接获取值
-        var totalAmount = order.totalAmount; // 已扣除点数后的总金额
-        var pointsUsed = order.pointsUsed || 0; // 使用的点数
-        var pointsEarned = order.pointsEarned || 0; // 获得的点数
-
-        // 构建订单明细的 HTML
-        var detailsHtml = `
-    <h2>訂單明細</h2>
-    <p class="order-status-text">訂單狀態：${statusText}</p>
-    <div class="order-items-container">
-      ${order.items.map((item) => {
-            var itemOptions = "";
-            if (item.description) {
-                itemOptions += `<p>${item.description}</p>`;
-            }
-            if (item.extras) {
-                itemOptions += `<p>${item.extras}</p>`;
-            }
-            var quantity = item.quantity || 1;
-            return `
-          <div class="order-item">
-            <div class="item-image">
-              <img src="${item.image}" alt="${item.name}" />
-            </div>
-            <div class="item-details">
-              <p class="item-name">${item.name}</p>
-              ${itemOptions}
-            </div>
-            <div class="item-quantity">
-              <p>${quantity}</p>
-            </div>
-            <div class="item-price">
-              <p>${item.price}</p>
-            </div>
-          </div>`;
-        }).join("")}
-    </div>
-    <div class="order-summary">
-      <p>點數折抵：<span>${pointsUsed}</span></p>
-      <p>總金額：<span>NT$${totalAmount}</span></p>
-      <p>獲得點數：<span>${pointsEarned}</span></p>
-    </div>`;
-
-        // 如果订单尚未取消，则显示取消按钮
-        if (order.orderStatus !== 3) {
-            detailsHtml += `<button class="cancel-order-btn" data-order-id="${order.orderID}">取消訂單</button>`;
-        } else {
-            detailsHtml += `<p style="color: red; font-weight: bold;">已取消</p>`;
-        }
-
-        // 显示订单明细
-        $("#orderDetailsContent").html(detailsHtml);
-        $("#orderDetailsModal").show();
-    }
-
 }
