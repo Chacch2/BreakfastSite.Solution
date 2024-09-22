@@ -329,12 +329,6 @@
 `);
 
     // 当用户点击“明细”按钮时显示订单详细信息
-    $(document).on("click", ".details-btn", function () {
-        var orderId = $(this).data("order-id");
-        showOrderDetails(orderId); // 调用函数显示订单详细信息
-    });
-
-    // 點擊 "取消訂單" 按鈕時觸發（僅在顯示訂單明細中）
     $(document).on("click", ".cancel-order-btn", function () {
         var orderId = parseInt($(this).data("order-id"));  // 確保 orderId 為數字類型
         console.log("取消訂單按鈕被點擊，訂單ID為:", orderId);
@@ -363,15 +357,15 @@
         $("#confirmCancel")
             .off("click")
             .on("click", function () {
-                // 發起 API 請求，將取消狀態發送給後端
+                // 發送 API 請求，將取消狀態發送給後端
                 fetch(`/api/orders/cancel/${orderId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    //body: JSON.stringify({
-                    //    orderStatus: 3 // 修改狀態為已取消
-                    //})
+                    body: JSON.stringify({
+                        orderStatus: 3 // 修改狀態為已取消
+                    })
                 })
                     .then(response => response.json())
                     .then(result => {
@@ -380,8 +374,17 @@
                         // 如果取消成功，更新前端顯示
                         if (result.message === "訂單已取消") {
                             alert("訂單已成功取消");
-                            // 更新 UI
-                            $(`button[data-order-id="${orderId}"]`).replaceWith('<p style="color: red; font-weight: bold;">已取消</p>');
+
+                            // 更新 UI - 訂單狀態改為「已取消」，保持明細按鈕不變
+                            $(`button[data-order-id="${orderId}"]`).closest('tr').find('td:nth-child(5)').text('已取消');
+
+                            // 更新明細按鈕旁邊的狀態為「已取消」
+                            $(`button[data-order-id="${orderId}"]`).closest('tr').find('td:nth-child(5)').text('已取消');
+
+                            // 同時更新 rankList 中的訂單狀態，這樣下次訪問同一筆訂單時狀態已經是已取消
+                            order.orderStatus = 3;
+                            // 如果彈出框已打開，更新彈出框內的訂單狀態
+                            $(".order-status-text").text("訂單狀態：已取消");
                         } else {
                             alert("訂單取消失敗，請稍後再試");
                         }
@@ -390,6 +393,9 @@
                         console.error('Error:', error);
                         alert("取消訂單失敗，請稍後再試。");
                     });
+
+                // 隱藏取消訂單彈出框
+                $("#cancelOrderModal").hide();
             });
 
         // 點擊 "取消" 按鈕時關閉彈出框
@@ -397,6 +403,10 @@
             $("#cancelOrderModal").hide();
         });
     });
+
+
+    
+
 
     
 
