@@ -12,9 +12,9 @@ namespace BackEnd.site.Models.EFModels
         public Order()
         {
             OrderDetails = new HashSet<OrderDetail>();
+            PointDetails = new HashSet<PointDetail>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
         public int TakeOrderNumber { get; set; }
@@ -33,11 +33,12 @@ namespace BackEnd.site.Models.EFModels
 
         public int OrderStatus { get; set; }
 
-        public int PointsEarned { get; set; }
-
         public virtual Member Member { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PointDetail> PointDetails { get; set; }
     }
 }

@@ -14,12 +14,11 @@ namespace BackEnd.site.Models.EFModels
             OrderAddOnDetails = new HashSet<OrderAddOnDetail>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
-        public int? OrderID { get; set; }
+        public int OrderID { get; set; }
 
-        public int? ProductID { get; set; }
+        public int ProductID { get; set; }
 
         [Required]
         [StringLength(50)]

@@ -27,8 +27,14 @@ namespace BackEnd.site.Controllers.Apis
                     PickupTime = o.TakeTime,
                     TotalAmount = o.FinalTotal,
                     OrderStatus = o.OrderStatus,
+
+                    // PointsEarned 从 PointDetails 中提取
+                    PointsEarned = db.PointDetails
+                        .Where(pd => pd.OrderId == o.Id)
+                        .Select(pd => pd.Earned)
+                        .FirstOrDefault(),
+
                     PointsUsed = o.PointsUsed,
-                    PointsEarned = o.PointsEarned,
 
                     // 查询 OrderDetails 的数据
                     Items = db.OrderDetails
@@ -36,22 +42,27 @@ namespace BackEnd.site.Controllers.Apis
                         .Select(od => new OrderItemVm
                         {
                             Name = od.Product.Name,
-                            Description = od.Product.Name, // 假设使用产品名称作为描述
-                            Price = od.ProductPrice,
-                            Quantity = od.ProductQuantity,
-                            Image = od.Product.Image,
 
-                            // 加选项的查询
-                            //Extras = db.OrderAddOnDetails
-                            //    .Where(aod => aod.OrderDetailID == od.Id)
-                            //    .Select(aod => new AddOnVm
-                            //    {
-                            //        Name = aod.ProductAddOnDetails.AddOnOption.Name,
-                            //        Price = aod.AddOnOptionPrice
-                            //    }).ToList()
+                            // Description 从 OrderAddOnDetails 和 ProductAddOnDetails 提取
+                            Description = db.OrderAddOnDetails
+                                .Where(aod => aod.OrderDetailID == od.Id)
+                                .Select(aod => db.ProductAddOnDetails
+                                    .Where(pad => pad.Id == aod.ProductAddOnDetailsID)
+                                    .Select(pad => pad.AddOnOptionName)
+                                    .FirstOrDefault())
+                                .FirstOrDefault(),
+
+                            // 从 Products 表提取 Image
+                            Image = db.Products
+                                .Where(p => p.Name == od.Product.Name)
+                                .Select(p => p.Image)
+                                .FirstOrDefault(),
+
+                            Price = od.ProductPrice,
+                            Quantity = od.ProductQuantity
                         }).ToList()
                 });
-
+                
             if (order == null)
             {
                 return NotFound();
@@ -61,32 +72,40 @@ namespace BackEnd.site.Controllers.Apis
         }
 
 
-        [HttpPut]
-        [Route("api/orders/cancel")]
-        public IHttpActionResult CancelOrder([FromBody] OrderUpdateVm orderUpdate)
+
+        [HttpPost]
+        [Route("api/orders/cancel/{orderId}")]
+        public IHttpActionResult CancelOrder(int orderId)
         {
-            var db = new AppDbContext();
-            // 根據訂單 ID 查詢訂單
-            var order = db.Orders.SingleOrDefault(o => o.Id == orderUpdate.OrderID);
-
-            if (order == null)
+            using (var db = new AppDbContext())
             {
-                return NotFound(); // 如果訂單不存在，返回 404
-            }
+                // 找到對應的訂單
+                var order = db.Orders.FirstOrDefault(o => o.Id == orderId);
 
-            // 更新訂單狀態為已取消
-            order.OrderStatus = orderUpdate.OrderStatus;
+                if (order == null)
+                {
+                    // 如果找不到訂單，返回 404 Not Found
+                    return NotFound();
+                }
 
-            try
-            {
-                db.SaveChanges(); // 保存修改到資料庫
-                return Ok(order); // 返回成功的結果
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("更新失敗：" + ex.Message); // 返回失敗的訊息
+                // 檢查訂單狀態是否允許取消
+                if (order.OrderStatus != 1)
+                {
+                    // 如果不是 "未取餐" 狀態，則不能取消訂單，返回 400 Bad Request
+                    return BadRequest("訂單已經被處理，無法取消。");
+                }
+
+                // 更新訂單狀態為 "已取消" (3)
+                order.OrderStatus = 3;
+
+                // 儲存變更到資料庫
+                db.SaveChanges();
+
+                // 返回成功訊息
+                return Ok(new { message = "訂單已取消", orderId = orderId });
             }
         }
+
     }
 
 

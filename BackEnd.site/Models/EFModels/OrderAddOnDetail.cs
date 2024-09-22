@@ -8,12 +8,11 @@ namespace BackEnd.site.Models.EFModels
 
     public partial class OrderAddOnDetail
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
 
-        public int? OrderDetailID { get; set; }
+        public int OrderDetailID { get; set; }
 
-        public int? ProductAddOnDetailsID { get; set; }
+        public int ProductAddOnDetailsID { get; set; }
 
         public int AddOnQuantity { get; set; }
 

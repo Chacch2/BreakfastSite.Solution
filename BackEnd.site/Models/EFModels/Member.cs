@@ -11,6 +11,7 @@ namespace BackEnd.site.Models.EFModels
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Member()
         {
+            PointDetails = new HashSet<PointDetail>();
             Orders = new HashSet<Order>();
         }
 
@@ -42,6 +43,9 @@ namespace BackEnd.site.Models.EFModels
         public bool BlackList { get; set; }
 
         public bool IsConfirmed { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PointDetail> PointDetails { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Order> Orders { get; set; }

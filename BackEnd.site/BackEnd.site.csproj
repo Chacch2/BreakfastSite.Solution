@@ -175,9 +175,11 @@
     <Compile Include="Models\EFModels\Order.cs" />
     <Compile Include="Models\EFModels\OrderAddOnDetail.cs" />
     <Compile Include="Models\EFModels\OrderDetail.cs" />
+    <Compile Include="Models\EFModels\PointDetail.cs" />
     <Compile Include="Models\EFModels\Product.cs" />
     <Compile Include="Models\EFModels\ProductAddOnDetail.cs" />
     <Compile Include="Models\EFModels\ProductCategory.cs" />
+    <Compile Include="Models\EFModels\TakeOrderNumber.cs" />
     <Compile Include="Models\ViewModels\AddOnVm.cs" />
     <Compile Include="Models\ViewModels\OrderUpdateVm.cs" />
     <Compile Include="Models\ViewModels\OrderItemVm.cs" />
