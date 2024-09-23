@@ -185,6 +185,7 @@
     <Compile Include="Models\ViewModels\OrderUpdateVm.cs" />
     <Compile Include="Models\ViewModels\OrderItemVm.cs" />
     <Compile Include="Models\ViewModels\OrderVm.cs" />
+    <Compile Include="Models\ViewModels\PointsDetailVm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
