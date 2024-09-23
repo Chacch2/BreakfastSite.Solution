@@ -49,21 +49,24 @@
         // 日期过滤函数
         function filterByDate(dateText) {
             filteredArray = rankList.filter(function (order) {
-                // 直接比较日期，只提取日期部分，不比較時間
-                var getDate = order.date.split("T")[0]; // 提取日期部分
-                console.log("提取的日期:", getDate); // 確認日期格式
+                // 提取数据库中的日期部分，去掉时间
+                var orderDate = order.date.split("T")[0]; // 提取订单的日期部分 (yyyy-mm-dd)
+                console.log("数据库中的日期: ", orderDate); // 输出数据库中的日期部分
+                console.log("选择的日期: ", dateText); // 输出用户选择的日期
 
-                return getDate === dateText; // 與選擇的日期進行比較
+                // 比较数据库中的日期与用户选择的日期
+                return orderDate === dateText;
             });
 
-            //if (filteredArray.length === 0) {
-            //    alert("沒有符合條件的訂單");
-            //}
+            if (filteredArray.length === 0) {
+                alert("沒有符合條件的訂單");
+            }
 
             currentPage = 1; // 重置为第一页
             updateTable();
             updatePagination();
         }
+
 
 
         // 更新表格函数

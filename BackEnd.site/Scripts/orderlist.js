@@ -75,7 +75,7 @@
     // 日期过滤函数
     function filterByDate(dateText) {
         filteredArray = rankList.filter(function (order) {
-            var orderDate = order.orderTime.split(" ")[0]; // 提取订单日期部分
+            var orderDate = order.orderTime.split("T")[0]; // 提取订单日期部分
             return orderDate === dateText;
         });
 
@@ -99,15 +99,17 @@
         var prevDisabled = current_index === 1 ? "disabled" : "";
         $(".index_buttons").append('<button id="prev-btn" ' + prevDisabled + "><</button>");
 
-        // 显示页码按钮
+        // 页码的开始和结束
+        // 确保 current_index 超过5时，仍能显示前面的页码范围
         var startPage = Math.max(1, current_index - Math.floor(visiblePageCount / 2));
-        var endPage = Math.min(max_index, startPage + visiblePageCount - 1);
+        var endPage = Math.min(startPage + visiblePageCount - 1, max_index);
 
-        // 如果剩余页码不够5个，则调整起始页码
+        // 调整 startPage 和 endPage，确保它们在合法范围内
         if (endPage - startPage + 1 < visiblePageCount) {
             startPage = Math.max(1, endPage - visiblePageCount + 1);
         }
 
+        // 创建分页按钮
         for (var i = startPage; i <= endPage; i++) {
             var activeClass = i === current_index ? "active" : "";
             $(".index_buttons").append(
@@ -119,22 +121,33 @@
         var nextDisabled = current_index >= max_index ? "disabled" : "";
         $(".index_buttons").append('<button id="next-btn" ' + nextDisabled + ">></button>");
 
-        updateTable(array); // 显示当前分页的表格数据
+        // 更新表格
+        updateTable(array);
     }
 
+
+    // 分页按钮点击事件
     // 分页按钮点击事件
     $(document).on("click", "#prev-btn", function () {
-        prev();
+        if (current_index > 1) {
+            current_index--;
+            displayIndexButtons(); // 重新计算并显示按钮
+        }
     });
 
     $(document).on("click", "#next-btn", function () {
-        next();
+        if (current_index < max_index) {
+            current_index++;
+            displayIndexButtons(); // 重新计算并显示按钮
+        }
     });
 
     $(document).on("click", ".index_buttons button[data-index]", function () {
         var index = $(this).data("index");
-        indexPagination(index);
+        current_index = parseInt(index);
+        displayIndexButtons(); // 根据点击的页码更新表格和分页按钮
     });
+
 
     function highlightIndexButton(totalEntries) {
         start_index = (current_index - 1) * table_size + 1;
