@@ -13,5 +13,8 @@ namespace BackEnd.site.Models.ViewModels
         public int Quantity { get; set; }         // 商品数量
         public string Image { get; set; }         // 商品图片路径
         public List<AddOnVm> Extras { get; set; } // 商品的加选项
+        public List<AddOnVm> AddOns { get; internal set; }
     }
+
+
 }

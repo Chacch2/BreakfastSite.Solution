@@ -43,14 +43,16 @@ namespace BackEnd.site.Controllers.Apis
                         {
                             Name = od.Product.Name,
 
-                            // Description 从 OrderAddOnDetails 和 ProductAddOnDetails 提取
-                            Description = db.OrderAddOnDetails
+                            // Description 仅提取相关加选项的资料，不包括价格
+                            AddOns = db.OrderAddOnDetails
                                 .Where(aod => aod.OrderDetailID == od.Id)
-                                .Select(aod => db.ProductAddOnDetails
-                                    .Where(pad => pad.Id == aod.ProductAddOnDetailsID)
-                                    .Select(pad => pad.AddOnOptionName)
-                                    .FirstOrDefault())
-                                .FirstOrDefault(),
+                                .Select(aod => new AddOnVm
+                                {
+                                    AddOnOptionName = db.ProductAddOnDetails
+                                        .Where(pad => pad.Id == aod.ProductAddOnDetailsID)
+                                        .Select(pad => pad.AddOnOptionName)
+                                        .FirstOrDefault()
+                                }).ToList(),
 
                             // 从 Products 表提取 Image
                             Image = db.Products
@@ -61,15 +63,29 @@ namespace BackEnd.site.Controllers.Apis
                             Price = od.ProductPrice,
                             Quantity = od.ProductQuantity
                         }).ToList()
-                });
-                
-            if (order == null)
+                })
+                .ToList();  // 先把資料提取出來
+
+            // 在记忆体中进行操作
+            foreach (var ord in order)
+            {
+                foreach (var item in ord.Items)
+                {
+                    // 使用 string.Join 将 AddOnOptionName 相关信息组合起来
+                    item.Description = string.Join(", ", item.AddOns.Select(a => a.AddOnOptionName));
+                }
+            }
+
+            if (order == null || !order.Any())  // 检查列表是否为空
             {
                 return NotFound();
             }
 
             return Ok(order);
         }
+
+
+
 
 
 
